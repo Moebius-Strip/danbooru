@@ -27,6 +27,8 @@ module Sources
           @artist_name, @profile_url = get_profile_from_page(page)
           @image_url = get_image_url_from_page(page)
           @tags = get_tags_from_page(page)
+          @artist_commentary_title = get_artist_commentary_title_from_page(page)
+          @artist_commentary_desc = get_artist_commentary_desc_from_page(page)
         end
       end
 
@@ -70,6 +72,24 @@ module Sources
         end
       end
 
+      def get_artist_commentary_title_from_page(page)
+        title = page.search("div.dev-title-container a").find_all do |node|
+          node["data-ga_click_event"] =~ /description_title/
+        end
+
+        if title.any?
+          title[0].inner_text
+        end
+      end
+
+      def get_artist_commentary_desc_from_page(page)
+        desc = page.search("div.dev-description div.text.block")
+
+        if desc.any?
+          desc[0].inner_text
+        end
+      end
+
       def normalized_url
         @normalized_url ||= begin
           if url =~ %r{\Ahttps?://(?:fc|th|pre|orig|img)\d{2}\.deviantart\.net/.+/[a-z0-9_]*_by_[a-z0-9_]+-d([a-z0-9]+)\.}i
@@ -85,7 +105,17 @@ module Sources
       end
 
       def agent
-        @agent ||= Mechanize.new
+        @agent ||= begin
+          mech = Mechanize.new
+          
+          # This cookie needs to be set to allow viewing of mature works
+          cookie = Mechanize::Cookie.new("agegate_state", "1")
+          cookie.domain = ".deviantart.com"
+          cookie.path = "/"
+          mech.cookie_jar.add(cookie)
+
+          mech
+        end
       end
     end
   end

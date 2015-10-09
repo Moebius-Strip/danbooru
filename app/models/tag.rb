@@ -659,11 +659,11 @@ class Tag < ActiveRecord::Base
 
   module SearchMethods
     def name_matches(name)
-      where("name LIKE ? ESCAPE E'\\\\'", name.mb_chars.downcase.to_escaped_for_sql_like)
+      where("tags.name LIKE ? ESCAPE E'\\\\'", name.mb_chars.downcase.to_escaped_for_sql_like)
     end
 
     def named(name)
-      where("name = ?", TagAlias.to_aliased([name]).join(""))
+      where("tags.name = ?", TagAlias.to_aliased([name]).join(""))
     end
 
     def search(params)
@@ -675,7 +675,7 @@ class Tag < ActiveRecord::Base
       end
 
       if params[:name].present?
-        q = q.where("name in (?)", params[:name].split(","))
+        q = q.where("tags.name in (?)", params[:name].split(","))
       end
 
       if params[:category].present?
@@ -690,6 +690,12 @@ class Tag < ActiveRecord::Base
         q = q.joins(:wiki_page)
       elsif params[:has_wiki] == "no"
         q = q.joins("LEFT JOIN wiki_pages ON tags.name = wiki_pages.title").where("wiki_pages.title IS NULL")
+      end
+
+      if params[:has_artist] == "yes"
+        q = q.joins("INNER JOIN artists ON tags.name = artists.name").where("artists.is_active = true")
+      elsif params[:has_artist] == "no"
+        q = q.joins("LEFT JOIN artists ON tags.name = artists.name").where("artists.name IS NULL OR artists.is_active = false")
       end
 
       params[:order] ||= params.delete(:sort)

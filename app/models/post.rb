@@ -153,8 +153,16 @@ class Post < ActiveRecord::Base
       file_ext =~ /swf/i
     end
 
-    def is_video?
+    def is_webm?
       file_ext =~ /webm/i
+    end
+
+    def is_mp4?
+      file_ext =~ /mp4/i
+    end
+
+    def is_video?
+      is_webm? || is_mp4?
     end
 
     def is_ugoira?
@@ -184,7 +192,7 @@ class Post < ActiveRecord::Base
     end
 
     def twitter_card_supported?
-      image_width.to_i >= 280 && image_height.to_i >= 150
+      image_width.to_i >= 280 && image_height.to_i >= 150 && file_size <= 1.megabyte
     end
 
     def has_large?
@@ -358,7 +366,7 @@ class Post < ActiveRecord::Base
       when %r{\Ahttp://p\.twpl\.jp/show/orig/([a-z0-9]+)}i
         "http://p.twipple.jp/#{$1}"
 
-      when %r{\Ahttps?://pictures\.hentai-foundry\.com//[^/]/([^/]+)/(\d+)\.}i
+      when %r{\Ahttps?://pictures\.hentai-foundry\.com//?[^/]/([^/]+)/(\d+)}i
         "http://www.hentai-foundry.com/pictures/user/#{$1}/#{$2}"
 
       when %r{\Ahttp://blog(?:(?:-imgs-)?\d*(?:-origin)?)?\.fc2\.com/(?:(?:[^/]/){3}|(?:[^/]/))([^/]+)/(?:file/)?([^\.]+\.[^\?]+)}i
@@ -583,7 +591,7 @@ class Post < ActiveRecord::Base
     def add_automatic_tags(tags)
       return tags if !Danbooru.config.enable_dimension_autotagging
 
-      tags -= %w(incredibly_absurdres absurdres highres lowres huge_filesize animated_gif flash webm)
+      tags -= %w(incredibly_absurdres absurdres highres lowres huge_filesize animated_gif flash webm mp4)
 
       if has_dimensions?
         if image_width >= 10_000 || image_height >= 10_000
@@ -620,8 +628,12 @@ class Post < ActiveRecord::Base
         tags << "flash"
       end
 
-      if is_video?
+      if is_webm?
         tags << "webm"
+      end
+
+      if is_mp4?
+        tags << "mp4"
       end
 
       if is_ugoira?

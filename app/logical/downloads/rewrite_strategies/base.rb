@@ -14,15 +14,22 @@ module Downloads
       end
 
     protected
+      def http_head_request(url, headers)
+        uri = URI.parse(url)
+        http = Net::HTTP.new(uri.host, uri.port)
+        if uri.scheme == "https"
+          http.use_ssl = true
+        end
+        http.request_head(uri.request_uri, headers) do |res|
+          return res
+        end
+      end
+
       def http_exists?(url, headers)
         exists = false
-        uri = URI.parse(url)
-        Net::HTTP.start(uri.host, uri.port) do |http|
-          http.request_head(uri.request_uri, headers) do |res|
-            if res.is_a?(Net::HTTPSuccess)
-              exists = true
-            end
-          end
+        res = http_head_request(url, headers)
+        if res.is_a?(Net::HTTPSuccess)
+          exists = true
         end
         exists
       end

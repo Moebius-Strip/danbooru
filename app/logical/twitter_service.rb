@@ -18,13 +18,21 @@ class TwitterService
   end
 
   def image_urls(tweet_url)
-    attrs = client.status(tweet_url).attrs
+    tweet_url =~ %r{/status/(\d+)}
+    twitter_id = $1
+    attrs = client.status(twitter_id).attrs
     urls = []
     attrs[:entities][:media].each do |obj|
       urls << obj[:media_url] + ":orig"
     end
     attrs[:extended_entities][:media].each do |obj|
-      urls << obj[:media_url] + ":orig"
+      if obj[:video_info]
+        largest = obj[:video_info][:variants].select {|x| x[:url] =~ /\.mp4$/}.max_by {|x| x[:bitrate]}
+        urls.clear
+        urls << largest[:url] if largest
+      else
+        urls << obj[:media_url] + ":orig"
+      end
     end
     urls.uniq
   rescue

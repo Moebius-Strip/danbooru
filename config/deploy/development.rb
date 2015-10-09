@@ -1,1 +1,2 @@
-server "localhost", :web, :app, :db, :primary => true
+set :rails_env, "development"
+server "localhost", :roles => %w(web app db), :primary => true

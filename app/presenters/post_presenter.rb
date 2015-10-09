@@ -6,7 +6,7 @@ class PostPresenter < Presenter
       return "Expunged"
     end
 
-    if post.is_deleted? && options[:tags] !~ /status:(?:all|any|deleted|banned)/ && !options[:raw]
+    if !options[:show_deleted] && post.is_deleted? && options[:tags] !~ /status:(?:all|any|deleted|banned)/ && !options[:raw]
       return ""
     end
 
@@ -68,6 +68,7 @@ class PostPresenter < Presenter
   def self.data_attributes(post)
     %{
       data-id="#{post.id}"
+      data-has-sound="#{post.has_tag?('video_with_sound|flash_with_sound')}"
       data-tags="#{h(post.tag_string)}"
       data-pools="#{post.pool_string}"
       data-uploader="#{h(post.uploader_name)}"

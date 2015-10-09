@@ -19,7 +19,7 @@ gem 'coffee-rails'
 gem "therubyracer", :platforms => :ruby
 gem "pry", :group => [:test, :development]
 gem "byebug", :group => [:test, :development]
-gem "rails", "~> 4.1.8"
+gem "rails", "~> 4.2.0"
 gem "pg"
 gem "kgio", :platforms => :ruby
 gem "dalli", :platforms => :ruby
@@ -41,8 +41,9 @@ gem 'diff-lcs', :require => "diff/lcs/array", :git => "https://github.com/halost
 gem 'bcrypt-ruby', :require => "bcrypt"
 gem 'awesome_print'
 gem 'statistics2'
-gem 'capistrano'
-gem 'capistrano-ext'
+gem 'capistrano', '~> 3.4.0'
+gem 'capistrano-rails'
+gem 'capistrano-rbenv'
 gem 'radix62', '~> 1.0.1'
 gem 'streamio-ffmpeg'
 gem 'rubyzip', :require => "zip"
@@ -50,16 +51,21 @@ gem 'coinbase'
 gem 'stripe'
 gem 'twitter'
 gem 'aws-sdk', '~> 2'
+gem 'responders'
+gem 'highline'
 
 # needed for looser jpeg header compat
 gem 'ruby-imagespec', :require => "image_spec", :git => "https://github.com/r888888888/ruby-imagespec.git", :branch => "exif-fixes"
 
+group :production, :staging do
+  gem 'unicorn', :platforms => :ruby
+  gem 'capistrano3-unicorn'
+end
+
 group :production do
   gem 'newrelic_rpm'
-  gem 'unicorn', :platforms => :ruby
   # gem 'unicorn-worker-killer'
   gem 'gctools', :platforms => :ruby
-  gem 'capistrano-unicorn', :require => false
 end
 
 group :development do
